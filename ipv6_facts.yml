@@ -1,0 +1,46 @@
+---
+########################################
+####### Facts IP Addresses     #########
+########################################
+
+- name: get iface list
+  set_fact:
+    ether_list: "{{ ether_list + [ item ] }}"
+  with_items:
+    - "{{ ansible_interfaces | map('replace', '-','_') | list }}"
+
+- name: set fact backup IPv6 
+  set_fact:
+    bckp_net_info_v6: "{{ bckp_net_info_v6 | combine([{'net_id': bckp_net_v6_id, 'ipv6': hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'], 'mac': hostvars[ansible_fqdn]['ansible_'~item]['macaddress']}]) }}"
+  with_items:
+    - "{{ ether_list }}"
+  when: hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'] | ipaddr('2801:86:2000:1e00::/64') | ipaddr('bool') 
+
+- name: set fact adm IPv6
+  set_fact:
+    adm_net_info_v6: "{{ adm_net_info_v6 | combine([{'net_id': adm_net_v6_id, 'ipv6': hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'], 'mac': hostvars[ansible_fqdn]['ansible_'~item]['macaddress']}]) }}"
+  with_items:
+    - "{{ ether_list }}"
+  when: hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'] | ipaddr('2801:86:2000:1900::/64') | ipaddr('bool') 
+
+- name: set fact dmz IPv6
+  set_fact:
+    dmz_net_info_v6: "{{ dnz_net_info_v6 | combine([{'net_id': dmz_net_v6_id, 'ipv6': hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'], 'mac': hostvars[ansible_fqdn]['ansible_'~item]['macaddress']}]) }}"
+  with_items:
+    - "{{ ether_list }}"
+  when: hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'] | ipaddr('2801:86:2000:1a00::/56') | ipaddr('bool') 
+
+  #- name: set fact nfs IPv6
+  #  set_fact:
+  #    nfs_net_info_v6: "{{ nfs_net_info_v6 | combine([{'net_id': nfs_net_id, 'ipv6': hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'], 'mac': hostvars[ansible_fqdn]['ansible_'~item]['macaddress']}]) }}"
+  #  with_items:
+  #    - "{{ ether_list }}"
+  #  when: hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'] | ipaddr('') | ipaddr('bool') 
+
+- name: set fact heartbeat IPv6
+  set_fact:
+    hb_net_info_v6: "{{ hb_net_info_v6 | combine([{'net_id': hb_net_v6_id, 'ipv6': hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'], 'mac': hostvars[ansible_fqdn]['ansible_'~item]['macaddress']}]) }}"
+  with_items:
+    - "{{ ether_list }}"
+  when: hostvars[ansible_fqdn]['ansible_'~item]['ipv6'].0['address'] | ipaddr('2801:86:2000:2200::/64') | ipaddr('bool') 
+

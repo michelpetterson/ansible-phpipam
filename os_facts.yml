@@ -1,0 +1,45 @@
+---
+########################################
+####### Facts Operating System #########
+########################################
+
+- name: Setting fact Operating system
+  set_fact:
+    ipam_so_id: '30'
+  when: ( ansible_distribution_release == "lenny" )
+
+- name: Setting fact Operating system
+  set_fact:
+    ipam_so_id: '51'
+  when: ( ansible_distribution_release == "squeeze" )
+
+- name: Setting fact Operating system
+  set_fact:
+    ipam_so_id: '28'
+  when: ( ansible_distribution_release == "wheezy" )
+
+- name: Setting fact Operating system
+  set_fact:
+    ipam_so_id: '27'
+  when: ( ansible_distribution_release == "jessie" )
+
+- name: Setting fact Operating system
+  set_fact:
+    ipam_so_id: '44'
+  when: ( ansible_distribution_release == "stretch" )
+
+- name: Setting fact Operating system
+  set_fact:
+    ipam_so_id: '54'
+  when: ( ansible_distribution_release == "buster" )
+
+
+  #- name: Setting fact Operating system
+  #  set_fact:
+  #    ipam_so_id: '39'
+  #  when: ( ansible_distribution_release == "4" )
+  #
+  #- name: Setting fact Operating system
+  #  set_fact:
+  #    ipam_so_id: '55'
+  #  when: ( ansible_distribution_release == "4" )

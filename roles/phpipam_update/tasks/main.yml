@@ -1,0 +1,87 @@
+---
+
+#- name: Authenticate in phpipam
+#  uri:
+#    url: "{{ ipam_url_api }}/user/"
+#    user: "{{ ipam_user }}"
+#    password: "{{ ipam_password }}"
+#    method: POST
+#    return_content: yes
+#    force_basic_auth: yes
+#    headers:
+#      Content-Type: "application/json"
+#  register: ipam_auth
+#  delegate_to: localhost
+#
+#- set_fact:
+#    ipam_token: "{{ ipam_auth.content | from_json | json_query('data.token') }}"
+#
+#- debug:
+#    var: adm_net_info_v4.net_id
+  
+- name: Get id from phpipam ip address object
+  uri:
+    url: "{{ ipam_url_api }}/addresses/{{ item.l_ip }}/{{ item.l_net_id }}/"
+    method: GET
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      token: "{{ ipam_app_token }}"
+  loop: 
+    # IPv4
+    - { l_net_id: "{{ adm_net_info_v4.net_id|default() }}", l_ip: "{{ adm_net_info_v4.ipv4|default() }}" }
+    - { l_net_id: "{{ bckp_net_info_v4.net_id|default() }}", l_ip: "{{ bckp_net_info_v4.ipv4|default() }}" }
+    - { l_net_id: "{{ dmz_net_info_v4.net_id|default() }}", l_ip: "{{ dmz_net_info_v4.ipv4|default() }}" }
+    - { l_net_id: "{{ hb_net_info_v4.net_id|default() }}", l_ip: "{{ hb_net_info_v4.ipv4|default() }}" }
+    - { l_net_id: "{{ nfs_net_info_v4.net_id|default() }}", l_ip: "{{ nfs_net_info_v4.ipv4|default() }}" }
+    # IPv6
+    - { l_net_id: "{{ adm_net_info_v6.net_id|default() }}", l_ip: "{{ adm_net_info_v6.ipv6|default() }}" }
+    - { l_net_id: "{{ bckp_net_info_v6.net_id|default() }}", l_ip: "{{ bckp_net_info_v6.ipv6|default() }}" }
+    - { l_net_id: "{{ dmz_net_info_v6.net_id|default() }}", l_ip: "{{ dmz_net_info_v6.ipv6|default() }}" }
+    - { l_net_id: "{{ hb_net_info_v6.net_id|default() }}", l_ip: "{{ hb_net_info_v6.ipv6|default() }}" }
+   #- { l_net_id: "{{ nfs_net_info_v6.net_id|default() }}", l_ip: "{{ nfs_net_info_v6.ipv6|default() }}" }
+  when: item.l_net_id != ""
+  register: ipam_result
+  delegate_to: localhost
+
+
+  #- debug:
+  #    msg: "{{ item.json.data.id|default() }}"
+  #  loop: "{{ ipam_result.results }}"
+  #  when: ipam_result.results is defined and item != ""
+
+- name: Setting ip id fact
+  set_fact:
+    ip_id: "{{ ip_id }} + [ '{{ item.json.data.id|default() }}' ]"
+  loop: "{{ ipam_result.results }}"
+  when: ipam_result.results is defined and item != ""
+
+- name: Update phpipam ip address object with OS data information received from facts.
+  uri:
+    url: "{{ ipam_url_api }}/addresses/{{ item.0 }}/"
+    method: PATCH
+    return_content: yes
+    status_code: [200, 201]
+    headers:
+      Content-Type: "application/json"
+      token: "{{ ipam_app_token }}"
+    body_format: json
+    body:
+      mac: "{{ item.1 }}"
+      location: "{{ location }}"
+      hostname: "{{ name }}"
+      owner: "{{ owner }}"
+      description: "{{ description }}"
+      deviceId: "{{ ipam_so_id }}"
+  with_together: 
+      - "{{ ip_id|default() }}"
+      - [ "{{ adm_net_info_v4.mac|default() }}", "{{ bckp_net_info_v4.mac|default() }}", "{{ dmz_net_info_v4.mac|default() }}", "{{ hb_net_info_v4.mac|default() }}", "{{ nfs_net_info_v4.mac|default() }}", "{{ adm_net_info_v6.mac|default() }}", "{{ bckp_net_info_v6.mac|default() }}", "{{ dmz_net_info_v6.mac|default() }}", "{{ hb_net_info_v6.mac|default() }}" ]
+  when: item.0 != "" or item.1 != ""
+
+  register: ipam_reservation
+  delegate_to: localhost
+
+  #- set_fact:
+  #    ips_reserved: "{{ ip_reserved }} + [ '{{ item.content | from_json | json_query('data') }}' ]"
+  #  loop: "{{ ipam_reservation.results }}"
+  #

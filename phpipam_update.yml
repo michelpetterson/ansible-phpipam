@@ -1,0 +1,57 @@
+---
+##################################################
+# Play01 - Create dynamic groups using OS family #
+##################################################
+
+- hosts: all
+  gather_facts: true
+  tasks:
+
+  - name: using group_by to sort OS family
+    group_by:
+      key: "{{ ansible_facts['os_family'] }}"
+
+#################################################
+# Play02 - Install and configure bareOS clients #
+#################################################
+
+- hosts: all
+  become: yes
+  gather_facts: true
+
+  vars_prompt:
+
+    - name: owner
+      prompt: "\n\n########################################################\n################ PHPIPAM DATA UPDATE ################\n########################################################\n\n=> Quem é o dono do serviço ?\n\nDono"
+      private: no
+
+    - name: description
+      prompt: "\n=> Qual a descrição para o serviço ?\n\nDescrição"
+      unsafe: yes
+      private: no
+
+  vars_files:
+    - vars.yml
+
+  pre_tasks:
+    - name: Setting ipv4 facts
+      include: ipv4_facts.yml
+    - name: Setting SO facts
+      include: os_facts.yml
+    - name: Setting ipv6 facts
+      include: ipv6_facts.yml
+
+    - set_fact:
+        name: "{{ ansible_fqdn }}"
+      register: name
+
+      #  tasks:
+      #    - name: log servers whitout backup network to file
+      #      lineinfile:
+      #        path: /tmp/ansible_bareos_noip_backup.log
+      #        line: "nome: {{ name }}"
+      #        create: yes 
+      #      delegate_to: localhost
+      #      when: ipaddr is not defined or ansible_facts['distribution_release'] == 'lenny'
+  roles:
+    - { role: phpipam_update }

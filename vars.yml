@@ -1,0 +1,41 @@
+
+# Initialize dictionaries
+bckp_net_info_v4: {}
+adm_net_info_v4: {}
+nfs_net_info_v4: {}
+dmz_net_info_v4: {}
+hb_net_info_v4: {}
+bckp_net_info_v6: {}
+adm_net_info_v6: {}
+nfs_net_info_v6: {}
+dmz_net_info_v6: {}
+hb_net_info_v6: {}
+
+# Initialize lists
+ether_list: []
+
+# PhpIpam variables
+
+ipam_url_api: 'https://phpipam.dominio.com/api/ansible'
+ipam_user:
+ipam_password:
+ipam_app_token:
+location: "1"
+
+# PhpIpam net ids
+
+# IPv4
+#
+bckp_net_v4_id: "554"
+adm_net_v4_id: "1182"
+dmz_net_v4_id: "1371"
+nfs_net_v4_id: "1181"
+hb_net_v4_id: "391"
+
+# IPv6
+#
+bckp_net_v6_id: "60"
+adm_net_v6_id: "64"
+dmz_net_v6_id: "360"
+nfs_net_v6_id: ""
+hb_net_v6_id: "1113"
